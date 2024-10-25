@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>Visionary Pi Digital Signage</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description"
+    content="Visionary Pi is a powerful and easy-to-use digital signage manager designed for Raspberry Pi. Create stunning digital displays to engage your audience.">
+  <meta name="keywords"
+    content="digital signage, raspberry pi, digital signage software, digital display, signage, advertising, marketing, screen, display, kiosk">
+  <meta property="og:title" content="Visionary Pi Digital Signage">
+  <meta property="og:description"
+    content="Visionary Pi is a powerful and easy-to-use digital signage manager designed for Raspberry Pi. Create stunning digital displays to engage your audience.">
+  <meta property="og:image" content="/logo/logo_1200x630.png">
+  <meta property="og:url" content="https://github.com/CodeJamboree/visionary-pi">
+  <meta property="og:site_name" content="Visionary Pi">
+
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" defer src="/src/main.tsx"></script>
+  <script>
+    document.getElementById('root')
+      .setAttribute('data-ts', Date.now().toString());
+
+    document.getElementById('root')
+      .setAttribute(
+        'data-timeout',
+        setTimeout(function () {
+          var element = document.getElementById('root');
+          if (!element) return;
+          element.removeAttribute('data-timeout');
+          if (!element.hasChildNodes()) {
+            element.innerText = 'Please wait...';
+          }
+        }, 2000).toString()
+      );
+  </script>
+</body>
+
+</html>
