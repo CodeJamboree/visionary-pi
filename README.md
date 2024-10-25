@@ -33,3 +33,16 @@
    ```bash
    git clone https://github.com/codejamboree/visionary-pi.git
    cd visionary-pi
+---
+# Usage
+
+*Upload Media:* Log in to the dashboard and upload images, videos, or HTML content for display.
+*Create a Playlist:* Organize uploaded content into playlists and assign them to displays.
+*Schedule Content:* Set specific times for each playlist or media to appear.
+*Monitor and Manage:* Use the dashboard to check the status of each connected display.
+
+---
+
+# License
+This project is licensed under the MIT License - see the [LICENSE](./LICENSE.md) file for details.
+
