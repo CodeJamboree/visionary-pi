@@ -1,6 +1,6 @@
 # Visionary π
 
-![Visionary Pi Logo](./logo.png)
+![Visionary Pi Logo](./logo.jpeg)
 
 **Visionary π** is an open-source digital signage solution designed to run on a Raspberry Pi. This software lets you turn any TV into a powerful, customizable digital signage system, perfect for displaying announcements, schedules, ads, and other media in a kiosk mode. **Visionary π** is optimized for ease of use, allowing users to control content from a simple interface with minimal configuration.
 
