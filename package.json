@@ -1,8 +1,10 @@
 {
   "name": "@codejamboree/visionary-pi",
   "version": "1.0.0",
+  "type": "module",
   "description": "Display & Manage digital signage with a Raspberry Pi in kiosk mode",
   "main": "index.js",
+  "private": true,
   "directories": {
     "doc": "docs"
   },
