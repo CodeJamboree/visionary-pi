@@ -1,0 +1,6 @@
+/dist/
+.deploy.json
+/node_modules/
+scripts/utils/json
+.DS_Store
+generated-*
