@@ -1,11 +1,12 @@
 import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid2";
 import Paper from "@mui/material/Paper";
+import UploadMediaButton from "./UploadMediaButton";
 
 const Media = () => {
   return (
     <>
-
+      <UploadMediaButton />
       <Grid
         container
         spacing={3}
