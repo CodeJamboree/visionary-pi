@@ -1,0 +1,27 @@
+<IfModule mod_authz_core.c>
+  Satisfy Any
+  Require all granted
+</IfModule>
+
+<IfModule mod_access_compat.c>
+  # Prevent access to files beginning with dot
+  <FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+  </FilesMatch>
+</IfModule>
+
+<IfModule mod_headers.c>
+  # CORS lets web browser on other devices make requests
+  Header set Access-Control-Allow-Origin *
+  Header add Access-Control-Allow-Headers *
+  Header add Access-Control-Allow-Methods "GET, POST, OPTIONS"
+</IfModule>
+
+<IfModule mod_rewrite.c>
+  # Append .php suffix if the file exists
+  RewriteEngine On
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME}.php -f
+  RewriteRule ^(.*)$ $1.php [L]
+</IfModule>

@@ -69,7 +69,13 @@ docker run hello-world
 
 ## Apache & PHP
 
-Let's build a docker file that sets up PHP & Apache. We mainly want to install/enable the Apache rewrite module, and the PHP mysqli extension.
+Let's build a docker file that sets up PHP & Apache.
+
+- Enable Apache Modules
+  - rewrite - allow us to expose urls without php extension
+  - headers - allow other devices on the network to talk to us (CORS)
+- PHP Extensions
+  - mysqli - connection to MariaDB/MySQL
 
 This is going to be part of our LAMP stack, so we'll setup a lamp directory, and add a sub folder for the php-image.
 
@@ -81,23 +87,91 @@ sudo nano dockerfile
 ```
 contents of dockerfile:
 ```dockerfile
-FROM php:8.3-rc-apache
+FROM php:8.3-apache
 
 RUN apt-get update
-RUN a2enmod rewrite
+RUN a2enmod rewrite headers authz_core access_compat
 
 RUN docker-php-ext-install mysqli
 RUN docker-php-ext-enable mysqli
 
 COPY ./ /var/www/html/
+WORKDIR /var/www/html
+
+RUN chmod 777 /var/www/html
+
+COPY apache2.conf /etc/apache2/apache2.conf
 
 EXPOSE 80 443
 
+RUN mkdir -p /usr/local/apache2/conf
+RUN echo "LoadModule headers_module /usr/lib/apache2/modules/mod_headers.so" >> /usr/local/apache2/conf/httpd.conf
+
+RUN apachectl configtest
+# RUN service apache2 restart
+
 CMD ["apache2ctl", "-D", "FOREGROUND"]
 ```
+Copy the apache2 configuration from /etc/apache2/apache2.conf locally to ~/lamp/apache2/apache2.conf, and then add the following `<Directory>` setting with the others.
+
+```bash
+sudo nano apache2.conf
+```
+```htaccess
+<Directory /var/www/html>
+    AllowOverride All
+</Directory>
+```
+If you can't find/access it, here is a sample
+```htaccess
+ServerName localhost
+DefaultRuntimeDir ${APACHE_RUN_DIR}
+PidFile ${APACHE_PID_FILE}
+Timeout 300
+KeepAlive On
+MaxKeepAliveRequests 100
+KeepAliveTimeout 5
+User ${APACHE_RUN_USER}
+Group ${APACHE_RUN_GROUP}
+HostnameLookups Off
+ErrorLog ${APACHE_LOG_DIR}/error.log
+LogLevel warn
+IncludeOptional mods-enabled/*.load
+IncludeOptional mods-enabled/*.conf
+Include ports.conf
+<Directory />
+        Options FollowSymLinks
+        AllowOverride None
+        Require all denied
+</Directory>
+<Directory /usr/share>
+        AllowOverride None
+        Require all granted
+</Directory>
+<Directory /var/www/>
+        Options Indexes FollowSymLinks
+        AllowOverride None
+        Require all granted
+</Directory>
+<Directory /var/www/html/>
+    AllowOverride All
+</Directory>
+AccessFileName .htaccess
+<FilesMatch "^\.ht">
+        Require all denied
+</FilesMatch>
+LogFormat "%v:%p %h %l %u %t \"%r\" %>s %O \"%{Referer}i\" \"%{User-Agent}i\"" vhost_combined
+LogFormat "%h %l %u %t \"%r\" %>s %O \"%{Referer}i\" \"%{User-Agent}i\"" combined
+LogFormat "%h %l %u %t \"%r\" %>s %O" common
+LogFormat "%{Referer}i -> %U" referer
+LogFormat "%{User-agent}i" agent
+IncludeOptional conf-enabled/*.conf
+IncludeOptional sites-enabled/*.conf
+```
+
 Ensure the file can be built
 ```bash
-docker build -t php-image .
+docker build --no-cache -t php-image .
 ```
 
 ## LAMP
@@ -127,6 +201,7 @@ services:
     volumes:
       - ./html:/var/www/html:rw
       - ./php/php.ini:/usr/local/etc/php/php.ini
+      - ./apache2:/etc/apache2
     environment:
       TZ: "America/New_York"
   mariadb:

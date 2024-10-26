@@ -2,4 +2,4 @@
 # docker usually creates it as the root user
 
 # scp -r dist/ui/* lewis@kiosk.local:~/lamp/html
-rsync -avz dist/ui/ lewis@kiosk.local:~/lamp/html
+rsync -avz dist/ lewis@kiosk.local:~/lamp/html

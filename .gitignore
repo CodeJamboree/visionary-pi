@@ -1,4 +1,5 @@
 /dist/
+/build/
 .deploy.json
 /node_modules/
 scripts/utils/json

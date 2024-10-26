@@ -11,7 +11,9 @@
   "scripts": {
     "start": "vite",
     "start:prod": "vite --mode production",
-    "build": "tsc -b && vite build",
+    "deploy": "rsync -avz dist/ lewis@kiosk.local:~/lamp/html",
+    "pack-php-js": "node ./scripts/pack-php-js.js",
+    "build": "tsc -b && vite build && npm run pack-php-js && npm run deploy",
     "lint": "eslint",
     "preview": "vite preview"
   },
