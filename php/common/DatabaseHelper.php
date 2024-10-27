@@ -84,7 +84,7 @@ class DatabaseHelper extends Database
         }
         return false;
     }
-    public function affectAny($sql, $types, ...$values)
+    public function affectAny($sql, $types = '', ...$values)
     {
         return $this->prepare($sql) &&
         $this->bind_param($types, ...$values) &&

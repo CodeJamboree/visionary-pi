@@ -31,26 +31,6 @@ RUN apt-get install -y \
     libavutil-dev \
     # Scaling & conversion for video frames
     libswscale-dev
-RUN pecl install ffmpeg
-RUN docker-php-ext-enable ffmpeg
-
-# Imagick to read animated GIF durations
-RUN apt-get install -y \
-    default-libmysqlclient-dev \ 
-    # core lib for imagick
-    libmagickwand-dev \
-    # handle PNG images
-    libpng-dev \
-    # handle JPEG images
-    libjpeg-dev \
-    # render text in images
-    freetype \
-    # render text in images (supporting lib)
-    libfreetype6-dev \
-    # handle WEBp images
-    libwebp-dev
-RUN pecl install imagick
-RUN docker-php-ext-enable imagick
 
 # MySQLi to talk to MariaDB
 RUN docker-php-ext-install mysqli

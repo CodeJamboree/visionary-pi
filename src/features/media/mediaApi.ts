@@ -1,5 +1,28 @@
 import { apiSlice } from "@/features/api/apiSlice";
+import { toQueryParams } from "../../utils/toQueryParams";
 
+export interface MediaListItem {
+  id: number,
+  url: string,
+  displayName: string,
+  width?: number,
+  height?: number,
+  duration: number,
+  fileFormat: string,
+  audioFormat: string,
+  videoFormat: string,
+  createdAt: number
+}
+
+interface MediaList {
+  total: number,
+  rows: MediaListItem[]
+}
+
+export interface MediaListParams {
+  offset?: number,
+  limit?: number
+}
 const mediaApi = apiSlice.injectEndpoints({
   endpoints: (build) => ({
     uploadFile: build.mutation<void, File>({
@@ -15,12 +38,21 @@ const mediaApi = apiSlice.injectEndpoints({
           }
         })
       },
+    }),
+    list: build.query<MediaList, MediaListParams>({
+      query: (params) => {
+        return ({
+          url: `/media/files/list${toQueryParams(params)}`,
+          method: 'GET'
+        })
+      },
     })
   })
 });
 
 export const {
-  useUploadFileMutation
+  useUploadFileMutation,
+  useListQuery
 } = mediaApi;
 
 export default mediaApi;

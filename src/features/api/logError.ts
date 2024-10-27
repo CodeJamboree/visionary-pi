@@ -1,5 +1,5 @@
 import { FetchBaseQueryError } from "@/types/FetchBaseQueryError";
-
+import { parseErrorMessage } from "@/utils/parseErrorMessage";
 export const logError = (fetchError: FetchBaseQueryError) => {
   if (!fetchError) return;
   if (hasApiError(fetchError)) {
@@ -7,16 +7,10 @@ export const logError = (fetchError: FetchBaseQueryError) => {
     console.log(error);
     if (stack) console.log(stack);
     return;
+
   }
-  if ('error' in fetchError) {
-    console.error(
-      fetchError.status,
-      fetchError.error,
-      fetchError.data
-    );
-    return;
-  }
-  console.error(fetchError.status, fetchError.data);
+  const message = parseErrorMessage(fetchError);
+  if (message && message !== '') console.error(message);
 }
 
 

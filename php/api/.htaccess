@@ -25,3 +25,5 @@
   RewriteCond %{REQUEST_FILENAME}.php -f
   RewriteRule ^(.*)$ $1.php [L]
 </IfModule>
+
+SetEnv DATABASE_CREDENTIALS {{database.credentials}}

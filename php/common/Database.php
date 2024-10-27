@@ -138,6 +138,10 @@ class Database
         }
         $this->conn->set_charset($this->charset);
     }
+    public function has_error()
+    {
+        return !empty($this->errorMessage);
+    }
     private function handleError($message, $statusCode, $error = null, $throw = false)
     {
         $this->errorMessage = $message;
