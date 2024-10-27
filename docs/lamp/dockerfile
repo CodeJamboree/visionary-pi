@@ -1,0 +1,86 @@
+# Latest release of PHP with apache web server
+FROM php:8.3-apache
+
+# update our package libraries
+RUN apt-get update
+
+# Enable apache modules used in .htaccess files
+RUN a2enmod \
+    # rewrite URL's so users can ask for urls without file extensions
+    rewrite \
+    # Add headers, in our case - CORS headers
+    headers \
+    # control access to website via authentication
+    # limit access to IP addresses
+    # access environment variables
+    # restrict access to specific HTTP methods (GET, POST, OPTIONS, DELETE, PUT)
+    authz_core \
+    # older authorization system (deprecated)
+    # allows directives such as Allow, Deny, Order
+    access_compat
+
+# FFmpeg to read audio/video dimesions/duration and video codecs
+RUN apt-get install -y \
+    # Video/Audio processing
+    ffmpeg \
+    # Encoding A/V audio & video codecs
+    libavcodec-dev \
+    # Handles A/V formats and demuxing
+    libavformat-dev \
+    # A/V Utility functions for FFmpeg
+    libavutil-dev \
+    # Scaling & conversion for video frames
+    libswscale-dev
+RUN pecl install ffmpeg
+RUN docker-php-ext-enable ffmpeg
+
+# Imagick to read animated GIF durations
+RUN apt-get install -y \
+    default-libmysqlclient-dev \ 
+    # core lib for imagick
+    libmagickwand-dev \
+    # handle PNG images
+    libpng-dev \
+    # handle JPEG images
+    libjpeg-dev \
+    # render text in images
+    freetype \
+    # render text in images (supporting lib)
+    libfreetype6-dev \
+    # handle WEBp images
+    libwebp-dev
+RUN pecl install imagick
+RUN docker-php-ext-enable imagick
+
+# MySQLi to talk to MariaDB
+RUN docker-php-ext-install mysqli
+RUN docker-php-ext-enable mysqli
+
+COPY ./ /var/www/html/
+WORKDIR /var/www/html
+
+# Make uploads folder read/write for php
+RUN mkdir /var/www/html/uploads
+# Owner read/write/exec, group & others read/write
+RUN chmod 766 /var/www/html/uploads
+
+# Overwrite apache2.conf - mainly allowing us to
+# add "AllowOverride All" for /var/www/html directory
+# so .htaccess files can override default settings
+COPY apache2.conf /etc/apache2/apache2.conf
+
+# http & https ports
+EXPOSE 80 443
+
+# Another attempt to enable headers mod
+# since 'a2enmod headers' doesn't seem 
+# to have an effect when the dockerimage
+# is built
+RUN mkdir -p /usr/local/apache2/conf
+RUN echo "LoadModule headers_module /usr/lib/apache2/modules/mod_headers.so" >> /usr/local/apache2/conf/httpd.conf
+
+# Verify apache2.conf looks legitimate
+RUN apachectl configtest
+
+# Run apache2 in the forground when the container starts
+CMD ["apache2ctl", "-D", "FOREGROUND"]
