@@ -1,12 +1,19 @@
 import { FC, useMemo, useState } from "react";
 import { MediaListItem, MediaListParams, MediaTypes, useListQuery } from "./mediaApi";
-import { DataGrid, GridColDef, GridPaginationModel } from '@mui/x-data-grid';
+import { DataGrid, GridColDef, GridPaginationModel, GridRowSelectionModel } from '@mui/x-data-grid';
+import { selectionChanged, selectSelectedIds } from "./mediaSlice";
+import { useDispatch, useSelector } from "react-redux";
 
 const MediaList: FC = () => {
+
+  const dispatch = useDispatch();
+  const selectedIds = useSelector(selectSelectedIds);
+
   const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
     page: 0,
     pageSize: 10
-  })
+  });
+
   const params = useMemo<MediaListParams>(() => {
     return {
       limit: paginationModel.pageSize,
@@ -15,12 +22,16 @@ const MediaList: FC = () => {
   }, [paginationModel]);
   const {
     data,
-    // isError,
-    // error,
     isLoading
   } = useListQuery(params);
+  const handleSelectionChange = (rowSelectionModel: GridRowSelectionModel) => {
+    if (Array.isArray(rowSelectionModel)) {
+      const ids = [...rowSelectionModel];
+      dispatch(selectionChanged({ selectedIds: ids }));
+    }
+  }
 
-  const columns: GridColDef<(typeof rows)[number]>[] = [
+  const columns: GridColDef<(typeof rows)[number]>[] = useMemo(() => [
     { field: 'id', headerName: 'ID', width: 90 },
     {
       field: 'displayName',
@@ -88,10 +99,15 @@ const MediaList: FC = () => {
         return value === 1 ? 'Sound' : 'Silent';
       }
     },
-  ];
-  const rows = data?.rows ?? [];
+  ], []);
+
+  const rows = useMemo(() => data?.rows ?? [], [data?.rows]);
 
   return <DataGrid
+    checkboxSelection
+    disableRowSelectionOnClick
+    rowSelectionModel={selectedIds}
+    onRowSelectionModelChange={handleSelectionChange}
     rows={rows}
     columns={columns}
     initialState={{
@@ -104,8 +120,6 @@ const MediaList: FC = () => {
     onPaginationModelChange={setPaginationModel}
     loading={isLoading}
     pageSizeOptions={[5, 10]}
-    checkboxSelection
-    disableRowSelectionOnClick
   />;
 }
 
@@ -132,69 +146,5 @@ const msAsDuration = (totalMs: number) => {
   let duration = parts.map(part => part.toString().padStart(2, '0')).join(':');
   if (ms > 0) duration += `.${ms.toString().padStart(3, '0')}`;
   return duration;
-
 }
-/*
-const _ImageItem: FC<{
-  item: MediaListItem
-}> = ({ item: {
-  width,
-  height,
-  displayName,
-  url,
-  createdAt,
-  duration,
-  videoFormat,
-  audioFormat,
-  fileFormat
-} }) => {
-    let created = new Date(createdAt * 1000);
-    let iWidth = width ?? 164;
-    let iHeight = height ?? 164;
-    if (iWidth > 164) {
-      iHeight *= 164 / iWidth;
-      iWidth = 164;
-    }
-    if (iHeight > 164) {
-      iWidth *= 164 / iHeight;
-      iHeight = 164;
-    }
-
-    return <Grid size={3}>
-      <Card>
-        <CardHeader
-          action={
-            <IconButton aria-label="settings">
-              <MoreVertIcon />
-            </IconButton>
-          }
-          title={displayName}
-          subheader={created.toLocaleDateString()}
-        />
-        <CardMedia
-          component="img"
-          height={iHeight}
-          image={url}
-          alt={displayName}
-        />
-        <CardContent>
-          {videoFormat ?? audioFormat ?? fileFormat}
-          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            {msAsDuration(duration)}
-          </Typography>
-        </CardContent>
-        <CardActions disableSpacing>
-          <IconButton aria-label="edit">
-            <EditIcon />
-          </IconButton>
-          <IconButton aria-label="share">
-            <DeleteIcon />
-          </IconButton>
-
-          <ExpandMoreIcon />
-        </CardActions>
-      </Card>
-    </Grid>
-  }
-    */
 export default MediaList;

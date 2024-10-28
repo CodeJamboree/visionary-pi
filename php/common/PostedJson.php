@@ -1,6 +1,6 @@
 <?php
 require_once 'HTTP_STATUS.php';
-require_once 'limit_rate_by_ip.php';
+// require_once 'limit_rate_by_ip.php';
 require_once 'detect_and_decompress.php';
 
 class PostedJson

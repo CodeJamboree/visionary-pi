@@ -32,6 +32,11 @@ function generate_image_thumbnail($imagePath, $name, $width = 200, $height = 100
         case IMAGETYPE_GIF:
             $image = imagecreatefromgif($imagePath);
             break;
+        case IMAGETYPE_WEBP:
+            $image = imagecreatefromwebp($sourcePath);
+            imagealphablending($resized, false);
+            imagesavealpha($resized, true);
+            break;
         default:
             return false;
     }
@@ -45,6 +50,9 @@ function generate_image_thumbnail($imagePath, $name, $width = 200, $height = 100
             break;
         case IMAGETYPE_GIF:
             imagegif($resized, $thumbnailPath);
+            break;
+        case IMAGETYPE_WEBP:
+            imagewebp($resized, $thumbnailPath);
             break;
     }
     imagedestroy($image);

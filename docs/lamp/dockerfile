@@ -20,8 +20,22 @@ RUN a2enmod \
     access_compat
 
 # GD Library to resize images
-RUN apt-get install -y libpng-dev libjpeg-dev libfreetype6-dev libgif-dev
-RUN docker-php-ext-configure gd --with-jpeg --with-freetype
+RUN apt-get install -y \
+    # .webp files
+    libwebp-dev \
+    # .png files
+    libpng-dev \
+    # .jpg files
+    libjpeg-dev \
+    # .gif files
+    libgif-dev \
+    # draw text on images
+    libfreetype6-dev
+
+RUN docker-php-ext-configure gd \
+    --with-jpeg \
+    --with-webp \
+    --with-freetype
 # No installation candidate for GD, compile instead
 RUN docker-php-ext-install gd
 RUN docker-php-ext-enable gd

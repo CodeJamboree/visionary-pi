@@ -59,6 +59,17 @@ const mediaApi = apiSlice.injectEndpoints({
         })
       },
     }),
+    delete: build.mutation<void, number[]>({
+      query: (ids) => {
+        return ({
+          url: `/media/files/delete`,
+          method: 'POST',
+          body: {
+            ids
+          }
+        });
+      }
+    }),
     list: build.query<MediaList, MediaListParams>({
       query: (params) => {
         return ({
@@ -79,7 +90,8 @@ const mediaApi = apiSlice.injectEndpoints({
 
 export const {
   useUploadFileMutation,
-  useListQuery
+  useListQuery,
+  useDeleteMutation
 } = mediaApi;
 
 export default mediaApi;
