@@ -1,36 +1,116 @@
-import { FC, useState } from "react";
-import { MediaListItem, MediaListParams, useListQuery } from "./mediaApi";
-import Grid from '@mui/material/Grid2';
-import Card from '@mui/material/Card';
-import CardHeader from '@mui/material/CardHeader';
-import CardMedia from '@mui/material/CardMedia';
-import CardContent from '@mui/material/CardContent';
-import CardActions from '@mui/material/CardActions';
-import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { FC, useMemo, useState } from "react";
+import { MediaListItem, MediaListParams, MediaTypes, useListQuery } from "./mediaApi";
+import { DataGrid, GridColDef, GridPaginationModel } from '@mui/x-data-grid';
 
 const MediaList: FC = () => {
-  const [params, _setParams] = useState<MediaListParams>({})
+  const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({
+    page: 0,
+    pageSize: 10
+  })
+  const params = useMemo<MediaListParams>(() => {
+    return {
+      limit: paginationModel.pageSize,
+      offset: paginationModel.page * paginationModel.pageSize
+    }
+  }, [paginationModel]);
   const {
     data,
     // isError,
     // error,
-    // isLoading
+    isLoading
   } = useListQuery(params);
 
-  return <Grid container spacing={2}>
-    {(data?.rows ?? []).map((item) => <ImageItem key={item.id}
-      item={item}
-    />)}
-  </Grid>;
+  const columns: GridColDef<(typeof rows)[number]>[] = [
+    { field: 'id', headerName: 'ID', width: 90 },
+    {
+      field: 'displayName',
+      headerName: 'Name',
+      width: 150,
+      editable: true,
+    },
+    {
+      field: 'url',
+      headerName: 'Preview',
+      width: 120,
+      renderCell: (value) => {
+        if (value.row.thumbnailUrl) {
+          return (
+            <img
+              src={value.row.thumbnailUrl}
+              alt="Preview"
+              style={{ width: '100%', height: 'auto', maxHeight: '60px', objectFit: 'cover', borderRadius: '4px' }}
+            />
+          )
+        }
+        switch (value.row.mediaType) {
+          case MediaTypes.image:
+          case MediaTypes.video:
+            break;
+          default:
+            return null;
+        }
+        return (
+          <img
+            src={value.row.url}
+            alt="Preview"
+            style={{ width: '100%', height: 'auto', maxHeight: '60px', objectFit: 'cover', borderRadius: '4px' }}
+          />
+        )
+      }
+    },
+    {
+      field: 'duration',
+      headerName: 'Duration',
+      type: 'number',
+      width: 110,
+      editable: true,
+      valueGetter: (value: number) => msAsDuration(value)
+    },
+    {
+      field: 'dimensions',
+      headerName: 'Size',
+      sortable: false,
+      width: 160,
+    },
+    {
+      field: 'mediaType',
+      headerName: 'type',
+      width: 150,
+      editable: true
+    },
+    {
+      field: 'hasAudio',
+      headerName: 'Audio',
+      width: 150,
+      editable: true,
+      valueGetter: (value: number, row: MediaListItem) => {
+        if (row.mediaType !== MediaTypes.video) return;
+        return value === 1 ? 'Sound' : 'Silent';
+      }
+    },
+  ];
+  const rows = data?.rows ?? [];
+
+  return <DataGrid
+    rows={rows}
+    columns={columns}
+    initialState={{
+      pagination: {
+        paginationModel
+      },
+    }}
+    paginationMode="server"
+    rowCount={data?.total ?? 0}
+    onPaginationModelChange={setPaginationModel}
+    loading={isLoading}
+    pageSizeOptions={[5, 10]}
+    checkboxSelection
+    disableRowSelectionOnClick
+  />;
 }
 
 const msAsDuration = (totalMs: number) => {
-  if ((totalMs ?? 0) === 0) return 'n/a';
+  if ((totalMs ?? 0) === 0) return;
   const ms = totalMs % 1000;
   totalMs -= ms;
   totalMs /= 1000;
@@ -54,8 +134,8 @@ const msAsDuration = (totalMs: number) => {
   return duration;
 
 }
-
-const ImageItem: FC<{
+/*
+const _ImageItem: FC<{
   item: MediaListItem
 }> = ({ item: {
   width,
@@ -116,4 +196,5 @@ const ImageItem: FC<{
       </Card>
     </Grid>
   }
+    */
 export default MediaList;

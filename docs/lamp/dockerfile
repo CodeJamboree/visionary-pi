@@ -19,6 +19,13 @@ RUN a2enmod \
     # allows directives such as Allow, Deny, Order
     access_compat
 
+# GD Library to resize images
+RUN apt-get install -y libpng-dev libjpeg-dev libfreetype6-dev libgif-dev
+RUN docker-php-ext-configure gd --with-jpeg --with-freetype
+# No installation candidate for GD, compile instead
+RUN docker-php-ext-install gd
+RUN docker-php-ext-enable gd
+
 # FFmpeg to read audio/video dimesions/duration and video codecs
 RUN apt-get install -y \
     # Video/Audio processing
@@ -44,6 +51,11 @@ RUN mkdir /var/www/html/uploads
 # Owner read/write/exec, group & others read/write
 RUN chmod 766 /var/www/html/uploads
 
+# Make thumbnails folder read/write for php
+RUN mkdir /var/www/html/thumbnails
+# Owner read/write/exec, group & others read/write
+RUN chmod 766 /var/www/html/thumbnails
+
 # Overwrite apache2.conf - mainly allowing us to
 # add "AllowOverride All" for /var/www/html directory
 # so .htaccess files can override default settings
@@ -61,6 +73,9 @@ RUN echo "LoadModule headers_module /usr/lib/apache2/modules/mod_headers.so" >> 
 
 # Verify apache2.conf looks legitimate
 RUN apachectl configtest
+
+# Clean up to reduce image size
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Run apache2 in the forground when the container starts
 CMD ["apache2ctl", "-D", "FOREGROUND"]

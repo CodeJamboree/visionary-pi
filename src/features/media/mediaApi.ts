@@ -1,22 +1,42 @@
 import { apiSlice } from "@/features/api/apiSlice";
 import { toQueryParams } from "../../utils/toQueryParams";
 
+export enum MediaTypes {
+  image = 'image',
+  video = 'video',
+  audio = 'audio',
+  other = 'other',
+  unknown = 'unknown'
+}
 export interface MediaListItem {
   id: number,
   url: string,
+  thumbnailUrl?: string,
   displayName: string,
-  width?: number,
-  height?: number,
-  duration: number,
-  fileFormat: string,
-  audioFormat: string,
-  videoFormat: string,
-  createdAt: number
+  dimesions?: string,
+  duration?: number,
+  createdAt: Date,
+  mediaType: MediaTypes,
+  hasAudio: boolean
 }
-
 interface MediaList {
   total: number,
   rows: MediaListItem[]
+}
+interface MediaListRaw {
+  total: number,
+  rows: MediaListItemRaw[]
+}
+interface MediaListItemRaw {
+  id: number,
+  url: string,
+  thumbnailUrl?: string,
+  displayName: string,
+  dimesions?: string,
+  duration?: number,
+  createdAt: number,
+  mediaType: MediaTypes,
+  hasAudio: boolean
 }
 
 export interface MediaListParams {
@@ -46,6 +66,13 @@ const mediaApi = apiSlice.injectEndpoints({
           method: 'GET'
         })
       },
+      transformResponse: ({ total, rows }: MediaListRaw) => ({
+        total,
+        rows: rows.map(item => ({
+          ...item,
+          createdAt: new Date(item.createdAt * 1000)
+        }))
+      })
     })
   })
 });

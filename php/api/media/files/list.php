@@ -1,33 +1,21 @@
 <?php
 require_once dirname(__DIR__, 3) . "/common/Show.php";
 require_once dirname(__DIR__, 3) . "/common/DatabaseHelper.php";
+require_once __DIR__ . "/common/get_query_pagination.php";
+require_once __DIR__ . "/common/get_root_url.php";
+
 error_reporting(E_ALL);
 ini_set('display_errors', 'On');
 
 function main()
 {
-    $pagination = get_pagination_params();
-
+    $pagination = get_query_pagination();
     $db = new DatabaseHelper();
     $total = get_total($db);
     if ($total > 0) {
         $rows = select_rows($db, $pagination);
     }
     Show::data(['total' => $total, 'rows' => $rows]);
-}
-function get_pagination_params($defaultLimit = 20, $defaultOffset = 0)
-{
-    $limit = isset($_GET['limit']) ? (int) $_GET['limit'] : $defaultLimit;
-    $offset = isset($_GET['offset']) ? (int) $_GET['offset'] : $defaultOffset;
-    if ($limit < 1) {
-        $limit = 1;
-    } elseif ($limit > 500) {
-        $limit = 500;
-    }
-    if ($offset < 0) {
-        $offset = 0;
-    }
-    return ['limit' => $limit, 'offset' => $offset];
 }
 function get_total($db)
 {
@@ -42,30 +30,31 @@ function select_rows($db, $pagination)
 {
     $sql = "SELECT
   MediaFiles.id,
-  CONCAT('http://kiosk.local/uploads/', MediaFiles.fileName) AS url,
+  FilePaths.path,
+  CONCAT(?, '/', FilePaths.path, '/', MediaFiles.fileName) AS url,
+  CONCAT(?, '/thumbnails/', MediaFiles.thumbnailFile) AS thumbnailUrl,
   MediaFiles.displayName,
-  MediaFiles.width,
-  MediaFiles.height,
+  CONCAT(MediaFiles.width, 'x', MediaFiles.height) AS dimensions,
   MediaFiles.duration,
   MediaFiles.createdAt,
-  FileFormats.name AS fileFormat,
-  AudioFormats.name AS audioFormat,
-  VideoFormats.name AS videoFormat
+  FileExtensions.mediaType,
+  MediaFiles.hasAudio
 FROM
   MediaFiles
-  LEFT OUTER JOIN FileFormats
-    ON MediaFiles.fileFormatId = FileFormats.id
-  LEFT OUTER JOIN AudioFormats
-    ON MediaFiles.audioFormatId = AudioFormats.id
-  LEFT OUTER JOIN VideoFormats
-    ON MediaFiles.videoFormatId = VideoFormats.id
+  LEFT OUTER JOIN FileExtensions
+    ON MediaFiles.fileExtensionId = FileExtensions.id
+  LEFT OUTER JOIN FilePaths
+    ON MediaFiles.filePathId = FilePaths.id
 ORDER BY
   MediaFiles.displayName ASC,
   MediaFiles.createdAt,
   MediaFiles.id
 LIMIT ? OFFSET ?
 ";
-    $rows = $db->selectRows($sql, 'ii',
+    $rootUrl = get_root_url();
+    $rows = $db->selectRows($sql, 'ssii',
+        $rootUrl,
+        $rootUrl,
         $pagination['limit'],
         $pagination['offset']
     );
